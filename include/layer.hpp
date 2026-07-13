@@ -8,16 +8,13 @@ class Layer {
     explicit Layer(std::vector<Neuron> neurons)
         : neurons_(std::move(neurons)) {}
 
-    std::vector<double> forward(const std::vector<double>& input) const {
-        std::vector<double> output;
-        output.reserve(neurons_.size());
-        for (const Neuron& neuron : neurons_)
-            output.push_back(neuron.forward(input));
-        return output;
-    }
+    std::vector<double> forward(const std::vector<double>& input);
+    std::vector<double> backward(const std::vector<double>& dLoss_dOutput);
+    void applyGradients(double learningRate);
 
     std::size_t size() const { return neurons_.size(); }
 
    private:
     std::vector<Neuron> neurons_;
+    std::size_t inputSize_ = 0;
 };

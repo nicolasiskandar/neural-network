@@ -1,7 +1,7 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -Iinclude -O2
 
-SRC := src/main.cpp src/neuron.cpp
+SRC := src/main_xor.cpp src/neuron.cpp src/layer.cpp
 BIN := nn_demo
 
 all: $(BIN)
