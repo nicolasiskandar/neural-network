@@ -13,6 +13,7 @@ class Layer {
     void applyGradients(double learningRate);
 
     std::size_t size() const { return neurons_.size(); }
+    const Neuron& neuron(std::size_t i) const { return neurons_[i]; }
 
    private:
     std::vector<Neuron> neurons_;

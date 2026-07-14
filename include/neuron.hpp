@@ -16,6 +16,7 @@ class Neuron {
 
     const std::vector<double>& weights() const { return weights_; }
     double bias() const { return bias_; }
+    const Activation& activation() const { return activation_; }
     const std::vector<double>& gradWeights() const { return gradWeights_; }
 
    private:

@@ -1,6 +1,7 @@
 #include "test_runner.hpp"
 
 #include <cmath>
+#include <cstdio>
 #include <random>
 #include <stdexcept>
 
@@ -9,6 +10,7 @@
 #include "losses.hpp"
 #include "network.hpp"
 #include "neuron.hpp"
+#include "serialize.hpp"
 
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
@@ -407,6 +409,110 @@ void testFastLayerApplyGradients(TestRunner& t) {
     t.check(true, "FastLayer::applyGradients: completes without error");
 }
 
+void testSaveLoadRoundTrip(TestRunner& t) {
+    Layer hidden({
+        Neuron({0.5, -0.3}, 0.1, Tanh), Neuron({0.8, 0.2}, -0.5, ReLU)}
+    );
+    Layer output({Neuron({0.4, -0.6}, 0.0, Sigmoid)});
+    NeuralNetwork net({hidden, output});
+
+    std::vector<double> input = {1.0, 0.5};
+    std::vector<double> before = net.predict(input);
+
+    const char* path = "/tmp/test_roundtrip.txt";
+    saveNetwork(net, path);
+    NeuralNetwork loaded = loadNetwork(path);
+    std::vector<double> after = loaded.predict(input);
+
+    t.check(before.size() == after.size(), "SaveLoad: output sizes match");
+    for (std::size_t i = 0; i < before.size(); ++i)
+        t.checkNear(
+            before[i], after[i], 1e-12,
+            "SaveLoad: prediction matches after round-trip"
+        );
+
+    std::remove(path);
+}
+
+void testSaveLoadMultipleLayers(TestRunner& t) {
+    Layer l1({Neuron({1.0, -1.0}, 0.0, ReLU), Neuron({-1.0, 1.0}, 0.0, Tanh)});
+    Layer l2({Neuron({0.5, 0.5}, 0.1, Sigmoid)});
+    Layer l3({Neuron({1.0}, -0.5, Tanh)});
+    NeuralNetwork net({l1, l2, l3});
+
+    std::vector<double> input = {0.7, -0.3};
+    std::vector<double> before = net.predict(input);
+
+    const char* path = "/tmp/test_multi_layer.txt";
+    saveNetwork(net, path);
+    NeuralNetwork loaded = loadNetwork(path);
+    std::vector<double> after = loaded.predict(input);
+
+    for (std::size_t i = 0; i < before.size(); ++i)
+        t.checkNear(
+            before[i], after[i], 1e-12,
+            "SaveLoad: multi-layer prediction matches"
+        );
+
+    std::remove(path);
+}
+
+void testSaveLoadAllActivations(TestRunner& t) {
+    Layer l({
+        Neuron({1.0}, 0.0, Sigmoid), Neuron({1.0}, 0.0, Tanh),
+        Neuron({1.0}, 0.0, ReLU)
+    });
+    NeuralNetwork net({l});
+
+    std::vector<double> input = {2.0};
+    std::vector<double> before = net.predict(input);
+
+    const char* path = "/tmp/test_activations.txt";
+    saveNetwork(net, path);
+    NeuralNetwork loaded = loadNetwork(path);
+    std::vector<double> after = loaded.predict(input);
+
+    for (std::size_t i = 0; i < before.size(); ++i)
+        t.checkNear(
+            before[i], after[i], 1e-12, "SaveLoad: all activations preserved"
+        );
+
+    std::remove(path);
+}
+
+void testSaveLoadPreservesAfterTraining(TestRunner& t) {
+    std::mt19937 rng(2);
+    std::uniform_real_distribution<double> dist(-1.0, 1.0);
+    NeuralNetwork net({
+        Layer({
+            Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
+            Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)
+        }),
+        Layer({Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)})}
+    );
+
+    std::vector<std::vector<double>> inputs = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    std::vector<std::vector<double>> targets = {{0}, {1}, {1}, {0}};
+    for (int epoch = 0; epoch < 4000; ++epoch)
+        for (std::size_t i = 0; i < inputs.size(); ++i)
+            net.trainStep(inputs[i], targets[i], 0.8, meanSquaredError);
+
+    std::vector<double> in = {0.0, 1.0};
+    std::vector<double> before = net.predict(in);
+
+    const char* path = "/tmp/test_trained.txt";
+    saveNetwork(net, path);
+    NeuralNetwork loaded = loadNetwork(path);
+    std::vector<double> after = loaded.predict(in);
+
+    t.checkNear(
+        before[0], after[0], 1e-12,
+        "SaveLoad: trained network prediction preserved"
+    );
+
+    std::remove(path);
+}
+
 int main() {
     TestRunner t;
 
@@ -449,6 +555,11 @@ int main() {
     testFastLayerForwardValues(t);
     testFastLayerGradientCheck(t);
     testFastLayerApplyGradients(t);
+
+    testSaveLoadRoundTrip(t);
+    testSaveLoadMultipleLayers(t);
+    testSaveLoadAllActivations(t);
+    testSaveLoadPreservesAfterTraining(t);
 
     t.summary();
     return t.allPassed() ? 0 : 1;

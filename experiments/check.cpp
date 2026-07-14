@@ -46,7 +46,8 @@ int main() {
     // double maxDiffB = 0.0;
     // for (std::size_t i = 0; i < dIn1.size(); ++i)
     //     maxDiffB = std::max(maxDiffB, std::abs(dIn1[i] - dIn2[i]));
-    // std::cout << "max backward dLoss_dInput difference: " << maxDiffB << "\n";
+    // std::cout << "max backward dLoss_dInput difference: " << maxDiffB <<
+    // "\n";
 
     layer.forward(input);
     fastLayer.forward(input);

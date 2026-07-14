@@ -37,6 +37,8 @@ class NeuralNetwork {
         return result.loss;
     }
 
+    const std::vector<Layer>& layers() const { return layers_; }
+
    private:
     std::vector<Layer> layers_;
 };

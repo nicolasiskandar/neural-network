@@ -1,5 +1,5 @@
-#include <random>
 #include <iostream>
+#include <random>
 
 #include "layer.hpp"
 #include "losses.hpp"
@@ -45,9 +45,9 @@ int main() {
     std::vector<double> outW;
     for (int i = 0; i < 8; ++i) outW.push_back(wDist(wRng));
 
-    NeuralNetwork net({
-        Layer(hiddenNeurons), Layer({Neuron(outW, wDist(wRng), Sigmoid)})
-    });
+    NeuralNetwork net(
+        {Layer(hiddenNeurons), Layer({Neuron(outW, wDist(wRng), Sigmoid)})}
+    );
 
     const double learningRate = 0.1;
     const int epochs = 3000;
