@@ -33,6 +33,9 @@ class FastLayer {
     std::vector<double> backward(const std::vector<double>& dLoss_dOutput);
     void applyGradients(double learningRate);
 
+    const std::vector<double>& gradWeights() const { return gradWeights_; }
+    const std::vector<double>& gradBiases() const { return gradBiases_; }
+
    private:
     std::size_t numInputs_;
     std::size_t numOutputs_;

@@ -390,6 +390,7 @@ void testFastLayerGradientCheck(TestRunner& t) {
     std::vector<double> out = fl.forward(input);
     LossResult result = meanSquaredError(out, target);
     fl.backward(result.dLoss_dOutput);
+    const std::vector<double>& analytic = fl.gradWeights();
 
     for (std::size_t i = 0; i < weights.size(); ++i) {
         double numeric = (lossForWeight(i, weights[i] + h) -
@@ -397,7 +398,7 @@ void testFastLayerGradientCheck(TestRunner& t) {
                          (2 * h);
         std::string desc =
             "FastLayer gradient check weight[" + std::to_string(i) + "]";
-        t.checkNear(numeric, numeric, 1e-5, desc);
+        t.checkNear(numeric, analytic[i], 1e-5, desc);
     }
 }
 
