@@ -30,3 +30,16 @@ extern "C" void nn_fast_layer_forward_f64(
     std::size_t numOutputs,
     int activationKind
 );
+
+extern "C" void nn_fast_layer_backward_f64(
+    const double* input,
+    const double* weights,
+    const double* output,
+    const double* dLoss_dOutput,
+    double* gradWeights,
+    double* gradBiases,
+    double* dLoss_dInput,
+    std::size_t numInputs,
+    std::size_t numOutputs,
+    int activationKind
+);

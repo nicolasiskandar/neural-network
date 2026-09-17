@@ -62,6 +62,15 @@ std::vector<double> FastLayer::backward(
     gradWeights_.assign(numOutputs_ * numInputs_, 0.0);
     gradBiases_.assign(numOutputs_, 0.0);
     std::vector<double> dLoss_dInput(numInputs_, 0.0);
+    int activationKind = assemblyActivationKind(activation_);
+    if (activationKind >= 0) {
+        nn_fast_layer_backward_f64(
+            lastInput_.data(), weights_.data(), lastOutput_.data(),
+            dLoss_dOutput.data(), gradWeights_.data(), gradBiases_.data(),
+            dLoss_dInput.data(), numInputs_, numOutputs_, activationKind
+        );
+        return dLoss_dInput;
+    }
 
     for (std::size_t o = 0; o < numOutputs_; ++o) {
         double delta = dLoss_dOutput[o] *
