@@ -94,6 +94,21 @@ void testLayer(TestRunner& t) {
     t.check(true, "Layer applies gradients");
 }
 
+void testAssemblyAccumulation(TestRunner& t) {
+    std::vector<double> destination = {1.0, -2.0, 0.5};
+    const std::vector<double> source = {2.0, 3.0, -0.5};
+    nn_accumulate_f64(destination.data(), source.data(), destination.size());
+    t.checkNear(
+        destination[0], 3.0, 1e-12, "Assembly accumulation: first element"
+    );
+    t.checkNear(
+        destination[1], 1.0, 1e-12, "Assembly accumulation: second element"
+    );
+    t.checkNear(
+        destination[2], 0.0, 1e-12, "Assembly accumulation: third element"
+    );
+}
+
 }  // namespace
 
 void runNeuronAndLayerTests(TestRunner& t) {
@@ -102,4 +117,5 @@ void runNeuronAndLayerTests(TestRunner& t) {
     testNeuronBackwardAndUpdate(t);
     testNeuronGradientCheck(t);
     testLayer(t);
+    testAssemblyAccumulation(t);
 }

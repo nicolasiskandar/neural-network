@@ -2,8 +2,6 @@
 
 #include <cstddef>
 
-// Internal numerical-kernel ABI. All routines use the System V AMD64 C ABI;
-// callers retain ownership of every input and output buffer.
 extern "C" double
 nn_dot_product_f64(const double* left, const double* right, std::size_t length);
 
@@ -50,6 +48,9 @@ extern "C" void nn_apply_gradients_f64(
     std::size_t count,
     double learningRate
 );
+
+extern "C" void
+nn_accumulate_f64(double* destination, const double* source, std::size_t count);
 
 extern "C" double nn_neuron_forward_f64(
     const double* input,
