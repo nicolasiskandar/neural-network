@@ -87,8 +87,10 @@ std::vector<double> FastLayer::backward(
 }
 
 void FastLayer::applyGradients(double learningRate) {
-    for (std::size_t k = 0; k < weights_.size(); ++k)
-        weights_[k] -= learningRate * gradWeights_[k];
-    for (std::size_t o = 0; o < numOutputs_; ++o)
-        biases_[o] -= learningRate * gradBiases_[o];
+    nn_apply_gradients_f64(
+        weights_.data(), gradWeights_.data(), weights_.size(), learningRate
+    );
+    nn_apply_gradients_f64(
+        biases_.data(), gradBiases_.data(), biases_.size(), learningRate
+    );
 }

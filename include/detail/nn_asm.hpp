@@ -43,3 +43,10 @@ extern "C" void nn_fast_layer_backward_f64(
     std::size_t numOutputs,
     int activationKind
 );
+
+extern "C" void nn_apply_gradients_f64(
+    double* values,
+    const double* gradients,
+    std::size_t count,
+    double learningRate
+);

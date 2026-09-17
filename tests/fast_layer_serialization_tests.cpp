@@ -2,6 +2,7 @@
 #include <random>
 #include <vector>
 
+#include "detail/nn_asm.hpp"
 #include "fastLayer.hpp"
 #include "layer.hpp"
 #include "losses.hpp"
@@ -47,6 +48,18 @@ void testFastLayer(TestRunner& t) {
     t.check(true, "FastLayer applies gradients");
 }
 
+void testAssemblyGradientUpdate(TestRunner& t) {
+    std::vector<double> values = {1.0, 2.0};
+    const std::vector<double> gradients = {0.5, -1.0};
+    nn_apply_gradients_f64(values.data(), gradients.data(), values.size(), 0.1);
+    t.checkNear(
+        values[0], 0.95, 1e-12, "Assembly gradient update: first value"
+    );
+    t.checkNear(
+        values[1], 2.1, 1e-12, "Assembly gradient update: second value"
+    );
+}
+
 void testSerialization(TestRunner& t) {
     NeuralNetwork network({
         Layer({Neuron({0.5, -0.3}, 0.1, Tanh), Neuron({0.8, 0.2}, -0.5, ReLU)}),
@@ -69,5 +82,6 @@ void testSerialization(TestRunner& t) {
 
 void runFastLayerAndSerializationTests(TestRunner& t) {
     testFastLayer(t);
+    testAssemblyGradientUpdate(t);
     testSerialization(t);
 }
