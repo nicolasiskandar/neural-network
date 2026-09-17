@@ -1,6 +1,6 @@
 # Neural Network
 
-A neural network from scratch with no external dependencies.
+A neural network from scratch with no external dependencies in C++ and Assembly
 
 ## Building
 
@@ -24,12 +24,29 @@ include/           Public headers
   fastLayer.hpp    FastLayer (flat-buffer layer, function-pointer activations)
   network.hpp      NeuralNetwork (chains layers, forward/backward/train)
   activations.hpp  Sigmoid, Tanh, ReLU (std::function-based)
-  losses.hpp       Mean Squared Error, Binary Cross Entropy
+  losses.hpp        Mean Squared Error, Binary Cross Entropy
   serialize.hpp    Save/load network weights to text files
-src/               Implementations (neuron, layer, fastLayer, serialize)
-tests/             Test suite with gradient checks
+  detail/           Internal assembly-kernel ABI declarations
+src/               C++ implementations (one module per subsystem)
+asm/kernels/       x86-64 scalar assembly numerical kernels
+tests/             Test runner and subsystem-specific test modules
 experiments/       XOR, circle classification, benchmark
 ```
+
+## Assembly Core
+
+Numerical kernels target x86-64 Linux using GNU assembler syntax and the
+System V AMD64 ABI. C++ owns vectors, object lifetime, validation, exceptions,
+serialization, and high-level network orchestration; assembly receives only
+raw buffers, scalar values, and sizes. Built-in `FastLayer` and `Neuron`
+activations use the assembly kernels, while user-supplied activation callbacks
+use the C++ fallback.
+
+Assembly sigmoid and tanh use bounded scalar approximations. Their documented
+maximum absolute error is `1e-6` on the normal input ranges; tests compare
+kernel outputs against the C++ reference implementations. Keep assembly
+changes narrowly scoped: add or alter one kernel, its C++ bridge, direct
+regression tests, and benchmark evidence in a single commit.
 
 ## Usage
 
