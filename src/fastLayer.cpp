@@ -1,6 +1,6 @@
 #include "fastLayer.hpp"
 
-#include "nn_asm.hpp"
+#include "detail/nn_asm.hpp"
 
 namespace {
 

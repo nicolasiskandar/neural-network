@@ -10,7 +10,7 @@
 #include "losses.hpp"
 #include "network.hpp"
 #include "neuron.hpp"
-#include "nn_asm.hpp"
+#include "detail/nn_asm.hpp"
 #include "serialize.hpp"
 
 void testAssemblyDotProduct(TestRunner& t) {

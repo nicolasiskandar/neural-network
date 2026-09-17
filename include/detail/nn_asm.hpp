@@ -2,16 +2,16 @@
 
 #include <cstddef>
 
+// Internal numerical-kernel ABI. All routines use the System V AMD64 C ABI;
+// callers retain ownership of every input and output buffer.
 extern "C" double
 nn_dot_product_f64(const double* left, const double* right, std::size_t length);
 
 extern "C" double nn_relu_f64(double value);
 extern "C" double nn_relu_derivative_from_output_f64(double output);
 extern "C" double nn_exp_approx_f64(double value);
-
 extern "C" double nn_sigmoid_f64(double value);
 extern "C" double nn_sigmoid_derivative_from_output_f64(double output);
-
 extern "C" double nn_tanh_f64(double value);
 extern "C" double nn_tanh_derivative_from_output_f64(double output);
 
