@@ -78,6 +78,25 @@ void testAssemblyTanh(TestRunner& t) {
     );
 }
 
+void testAssemblyFastLayerForward(TestRunner& t) {
+    const std::vector<double> input = {2.0, -1.0};
+    const std::vector<double> weights = {0.5, 1.0, -1.0, 0.25};
+    const std::vector<double> biases = {0.25, -0.5};
+    std::vector<double> output(2);
+    nn_fast_layer_forward_f64(
+        input.data(), weights.data(), biases.data(), output.data(), 2, 2,
+        NN_ACTIVATION_TANH
+    );
+    t.checkNear(
+        output[0], nn_tanh_f64(0.25), 1e-12,
+        "Assembly FastLayer forward: output 0"
+    );
+    t.checkNear(
+        output[1], nn_tanh_f64(-2.75), 1e-12,
+        "Assembly FastLayer forward: output 1"
+    );
+}
+
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
     t.checkNear(sigmoidFn(1.0), 0.731058, 1e-5, "Sigmoid(1) ~ 0.73106");
@@ -594,6 +613,7 @@ int main() {
     testAssemblyExpApproximation(t);
     testAssemblySigmoid(t);
     testAssemblyTanh(t);
+    testAssemblyFastLayerForward(t);
 
     testNeuronForward(t);
     testNeuronForwardWithBias(t);

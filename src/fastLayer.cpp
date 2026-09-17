@@ -4,6 +4,13 @@
 
 namespace {
 
+int assemblyActivationKind(const PlainActivation& activation) {
+    if (activation.forward == sigmoidFn) return NN_ACTIVATION_SIGMOID;
+    if (activation.forward == tanhFn) return NN_ACTIVATION_TANH;
+    if (activation.forward == reluFn) return NN_ACTIVATION_RELU;
+    return -1;
+}
+
 double applyForwardActivation(const PlainActivation& activation, double value) {
     if (activation.forward == reluFn) return nn_relu_f64(value);
     if (activation.forward == sigmoidFn) return nn_sigmoid_f64(value);
@@ -27,6 +34,15 @@ applyDerivativeActivation(const PlainActivation& activation, double output) {
 std::vector<double> FastLayer::forward(const std::vector<double>& input) {
     lastInput_ = input;
     lastOutput_.resize(numOutputs_);
+    int activationKind = assemblyActivationKind(activation_);
+    if (activationKind >= 0) {
+        nn_fast_layer_forward_f64(
+            input.data(), weights_.data(), biases_.data(), lastOutput_.data(),
+            numInputs_, numOutputs_, activationKind
+        );
+        return lastOutput_;
+    }
+
     for (std::size_t o = 0; o < numOutputs_; ++o) {
         const double* row = &weights_[o * numInputs_];
         double z =
