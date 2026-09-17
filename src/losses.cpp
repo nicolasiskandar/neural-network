@@ -3,18 +3,17 @@
 #include <algorithm>
 #include <cmath>
 
+#include "detail/nn_asm.hpp"
+
 LossResult meanSquaredError(
     const std::vector<double>& predicted,
     const std::vector<double>& target
 ) {
     std::vector<double> grad(predicted.size());
     double loss = 0.0;
-
-    for (std::size_t i = 0; i < predicted.size(); ++i) {
-        double diff = predicted[i] - target[i];
-        loss += 0.5 * diff * diff;
-        grad[i] = diff;
-    }
+    nn_mean_squared_error_f64(
+        predicted.data(), target.data(), grad.data(), predicted.size(), &loss
+    );
 
     return LossResult{loss, grad};
 }

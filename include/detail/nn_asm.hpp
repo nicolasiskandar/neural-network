@@ -52,6 +52,14 @@ extern "C" void nn_apply_gradients_f64(
 extern "C" void
 nn_accumulate_f64(double* destination, const double* source, std::size_t count);
 
+extern "C" void nn_mean_squared_error_f64(
+    const double* predicted,
+    const double* target,
+    double* gradient,
+    std::size_t count,
+    double* loss
+);
+
 extern "C" double nn_neuron_forward_f64(
     const double* input,
     const double* weights,

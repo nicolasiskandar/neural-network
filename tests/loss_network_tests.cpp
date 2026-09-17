@@ -2,6 +2,7 @@
 #include <random>
 #include <vector>
 
+#include "detail/nn_asm.hpp"
 #include "layer.hpp"
 #include "losses.hpp"
 #include "network.hpp"
@@ -29,6 +30,20 @@ void testLosses(TestRunner& t) {
         meanSquaredError({2.0}, {3.0}).dLoss_dOutput[0], numeric, 1e-5,
         "MSE numeric gradient"
     );
+}
+
+void testAssemblyMse(TestRunner& t) {
+    const std::vector<double> predicted = {1.0, 3.0};
+    const std::vector<double> target = {2.0, 5.0};
+    std::vector<double> gradient(2);
+    double loss = 0.0;
+    nn_mean_squared_error_f64(
+        predicted.data(), target.data(), gradient.data(), predicted.size(),
+        &loss
+    );
+    t.checkNear(loss, 2.5, 1e-12, "Assembly MSE loss");
+    t.checkNear(gradient[0], -1.0, 1e-12, "Assembly MSE first gradient");
+    t.checkNear(gradient[1], -2.0, 1e-12, "Assembly MSE second gradient");
 }
 
 NeuralNetwork makeXorNetwork(unsigned seed) {
@@ -71,5 +86,6 @@ void testNetworkTraining(TestRunner& t) {
 
 void runLossAndNetworkTests(TestRunner& t) {
     testLosses(t);
+    testAssemblyMse(t);
     testNetworkTraining(t);
 }
