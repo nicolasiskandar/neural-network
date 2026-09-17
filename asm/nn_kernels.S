@@ -91,6 +91,47 @@ nn_exp_approx_f64:
   movapd %xmm1, %xmm0
   ret
 
+  .globl nn_sigmoid_f64
+  .type nn_sigmoid_f64, @function
+
+# double nn_sigmoid_f64(double value)
+# Saturation at +/-14 keeps the maximum saturation error below 1e-6.
+nn_sigmoid_f64:
+  ucomisd %xmm0, %xmm0
+  jp      .Lsigmoid_compute
+  ucomisd .Lsigmoid_upper(%rip), %xmm0
+  jae     .Lsigmoid_one
+  ucomisd .Lsigmoid_lower(%rip), %xmm0
+  jbe     .Lsigmoid_zero
+.Lsigmoid_compute:
+  xorpd  %xmm1, %xmm1
+  subsd  %xmm0, %xmm1
+  movapd %xmm1, %xmm0
+  subq   $8, %rsp
+  call   nn_exp_approx_f64
+  addq   $8, %rsp
+  addsd  .Lone(%rip), %xmm0
+  movsd  .Lone(%rip), %xmm1
+  divsd  %xmm0, %xmm1
+  movapd %xmm1, %xmm0
+  ret
+.Lsigmoid_one:
+  movsd .Lone(%rip), %xmm0
+  ret
+.Lsigmoid_zero:
+  xorpd %xmm0, %xmm0
+  ret
+
+  .globl nn_sigmoid_derivative_from_output_f64
+  .type nn_sigmoid_derivative_from_output_f64, @function
+
+# double nn_sigmoid_derivative_from_output_f64(double output)
+nn_sigmoid_derivative_from_output_f64:
+  movsd .Lone(%rip), %xmm1
+  subsd %xmm0, %xmm1
+  mulsd %xmm1, %xmm0
+  ret
+
   .section .rodata
 .p2align 3
 .Lone:
@@ -99,6 +140,10 @@ nn_exp_approx_f64:
   .double 0.69314718055994530942
 .Linv_ln2:
   .double 1.4426950408889634074
+.Lsigmoid_lower:
+  .double -14.0
+.Lsigmoid_upper:
+  .double 14.0
 .Lexp_c2:
   .double 0.5
 .Lexp_c3:

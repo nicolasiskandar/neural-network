@@ -50,6 +50,20 @@ void testAssemblyExpApproximation(TestRunner& t) {
     }
 }
 
+void testAssemblySigmoid(TestRunner& t) {
+    for (double input : {-14.0, -8.0, -1.0, 0.0, 1.0, 8.0, 14.0}) {
+        t.checkNear(
+            nn_sigmoid_f64(input), sigmoidFn(input), 1e-6,
+            "Assembly sigmoid approximation"
+        );
+    }
+    double output = nn_sigmoid_f64(1.0);
+    t.checkNear(
+        nn_sigmoid_derivative_from_output_f64(output), output * (1.0 - output),
+        1e-12, "Assembly sigmoid derivative"
+    );
+}
+
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
     t.checkNear(sigmoidFn(1.0), 0.731058, 1e-5, "Sigmoid(1) ~ 0.73106");
@@ -564,6 +578,7 @@ int main() {
     testAssemblyDotProduct(t);
     testAssemblyRelu(t);
     testAssemblyExpApproximation(t);
+    testAssemblySigmoid(t);
 
     testNeuronForward(t);
     testNeuronForwardWithBias(t);

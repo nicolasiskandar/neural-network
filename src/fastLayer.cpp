@@ -6,6 +6,7 @@ namespace {
 
 double applyForwardActivation(const PlainActivation& activation, double value) {
     if (activation.forward == reluFn) return nn_relu_f64(value);
+    if (activation.forward == sigmoidFn) return nn_sigmoid_f64(value);
     return activation.forward(value);
 }
 
@@ -13,6 +14,8 @@ double
 applyDerivativeActivation(const PlainActivation& activation, double output) {
     if (activation.derivativeFromOutput == reluDerivFromOutput)
         return nn_relu_derivative_from_output_f64(output);
+    if (activation.derivativeFromOutput == sigmoidDerivFromOutput)
+        return nn_sigmoid_derivative_from_output_f64(output);
     return activation.derivativeFromOutput(output);
 }
 
