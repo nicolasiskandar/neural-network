@@ -1,7 +1,8 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -Iinclude -O2
 
-CPP_SRC := src/fastLayer.cpp src/neuron.cpp src/layer.cpp src/serialize.cpp
+CPP_SRC := src/activations.cpp src/fastLayer.cpp src/layer.cpp src/losses.cpp \
+	src/network.cpp src/neuron.cpp src/serialize.cpp
 ASM_SRC := asm/kernels/dot_product.S asm/kernels/activations.S \
 	asm/kernels/fast_layer.S
 LIB_SRC := $(CPP_SRC) $(ASM_SRC)

@@ -1,5 +1,4 @@
 #pragma once
-#include <cmath>
 #include <functional>
 
 using ActivationFn = std::function<double(double)>;
@@ -9,15 +8,15 @@ struct Activation {
     ActivationFn derivativeFromOutput;
 };
 
-inline double sigmoidFn(double z) { return 1.0 / (1.0 + std::exp(-z)); }
-inline double sigmoidDerivFromOutput(double y) { return y * (1.0 - y); }
+double sigmoidFn(double z);
+double sigmoidDerivFromOutput(double y);
 
-inline double tanhFn(double z) { return std::tanh(z); }
-inline double tanhDerivFromOutput(double y) { return 1.0 - y * y; }
+double tanhFn(double z);
+double tanhDerivFromOutput(double y);
 
-inline double reluFn(double z) { return std::max(0.0, z); }
-inline double reluDerivFromOutput(double y) { return y > 0.0 ? 1.0 : 0.0; }
+double reluFn(double z);
+double reluDerivFromOutput(double y);
 
-inline const Activation Sigmoid{sigmoidFn, sigmoidDerivFromOutput};
-inline const Activation Tanh{tanhFn, tanhDerivFromOutput};
-inline const Activation ReLU{reluFn, reluDerivFromOutput};
+extern const Activation Sigmoid;
+extern const Activation Tanh;
+extern const Activation ReLU;

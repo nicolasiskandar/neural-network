@@ -2,6 +2,10 @@
 
 #include "detail/nn_asm.hpp"
 
+const PlainActivation FastSigmoid{sigmoidFn, sigmoidDerivFromOutput};
+const PlainActivation FastTanh{tanhFn, tanhDerivFromOutput};
+const PlainActivation FastReLU{reluFn, reluDerivFromOutput};
+
 namespace {
 
 int assemblyActivationKind(const PlainActivation& activation) {

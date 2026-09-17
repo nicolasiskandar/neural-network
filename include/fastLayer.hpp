@@ -10,9 +10,9 @@ struct PlainActivation {
     PlainActivationFn derivativeFromOutput;
 };
 
-inline const PlainActivation FastSigmoid{sigmoidFn, sigmoidDerivFromOutput};
-inline const PlainActivation FastTanh{tanhFn, tanhDerivFromOutput};
-inline const PlainActivation FastReLU{reluFn, reluDerivFromOutput};
+extern const PlainActivation FastSigmoid;
+extern const PlainActivation FastTanh;
+extern const PlainActivation FastReLU;
 
 class FastLayer {
    public:
