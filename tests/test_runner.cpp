@@ -39,6 +39,17 @@ void testAssemblyRelu(TestRunner& t) {
     );
 }
 
+void testAssemblyExpApproximation(TestRunner& t) {
+    for (double input : {-16.0, -8.0, -1.0, 0.0, 1.0, 8.0, 16.0}) {
+        double actual = nn_exp_approx_f64(input);
+        double expected = std::exp(input);
+        t.checkNear(
+            actual, expected, std::max(1e-12, expected * 1e-9),
+            "Assembly exp approximation"
+        );
+    }
+}
+
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
     t.checkNear(sigmoidFn(1.0), 0.731058, 1e-5, "Sigmoid(1) ~ 0.73106");
@@ -552,6 +563,7 @@ int main() {
     testReluDerivative(t);
     testAssemblyDotProduct(t);
     testAssemblyRelu(t);
+    testAssemblyExpApproximation(t);
 
     testNeuronForward(t);
     testNeuronForwardWithBias(t);
