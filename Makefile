@@ -7,7 +7,7 @@ ASM_SRC := asm/kernels/dot_product.S asm/kernels/activations.S \
 	asm/kernels/fast_layer.S
 LIB_SRC := $(CPP_SRC) $(ASM_SRC)
 
-TEST_SRC := tests/test_runner.cpp $(LIB_SRC)
+TEST_SRC := tests/test_runner.cpp tests/*_tests.cpp $(LIB_SRC)
 TEST_BIN := nn_test
 
 XOR_SRC := experiments/main_xor.cpp $(LIB_SRC)
