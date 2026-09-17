@@ -26,6 +26,19 @@ void testAssemblyDotProduct(TestRunner& t) {
     );
 }
 
+void testAssemblyRelu(TestRunner& t) {
+    t.checkNear(nn_relu_f64(-3.0), 0.0, 1e-12, "Assembly ReLU: negative input");
+    t.checkNear(nn_relu_f64(2.5), 2.5, 1e-12, "Assembly ReLU: positive input");
+    t.checkNear(
+        nn_relu_derivative_from_output_f64(0.0), 0.0, 1e-12,
+        "Assembly ReLU derivative: zero output"
+    );
+    t.checkNear(
+        nn_relu_derivative_from_output_f64(2.5), 1.0, 1e-12,
+        "Assembly ReLU derivative: positive output"
+    );
+}
+
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
     t.checkNear(sigmoidFn(1.0), 0.731058, 1e-5, "Sigmoid(1) ~ 0.73106");
@@ -182,10 +195,10 @@ void testGradientCheckBias(TestRunner& t) {
 }
 
 void testLayerForwardOutputSize(TestRunner& t) {
-    Layer layer({
-        Neuron({1.0, 0.0}, 0.0, ReLU), Neuron({0.0, 1.0}, 0.0, ReLU),
-        Neuron({1.0, 1.0}, 0.0, ReLU)
-    });
+    Layer layer(
+        {Neuron({1.0, 0.0}, 0.0, ReLU), Neuron({0.0, 1.0}, 0.0, ReLU),
+         Neuron({1.0, 1.0}, 0.0, ReLU)}
+    );
     std::vector<double> out = layer.forward({1.0, 2.0});
     t.check(
         out.size() == 3, "Layer::forward: output size matches neuron count"
@@ -209,9 +222,9 @@ void testLayerBackwardOutputSize(TestRunner& t) {
 }
 
 void testLayerApplyGradients(TestRunner& t) {
-    Layer layer({
-        Neuron({1.0, 0.0}, 0.5, Sigmoid), Neuron({0.0, 1.0}, -0.5, Sigmoid)
-    });
+    Layer layer(
+        {Neuron({1.0, 0.0}, 0.5, Sigmoid), Neuron({0.0, 1.0}, -0.5, Sigmoid)}
+    );
     layer.forward({1.0, 1.0});
     layer.backward({1.0, 1.0});
     layer.applyGradients(0.1);
@@ -284,10 +297,10 @@ void testBinaryCrossEntropyGradientCheck(TestRunner& t) {
 void testXorNetworkLearnsCorrectly(TestRunner& t) {
     std::mt19937 rng(2);
     std::uniform_real_distribution<double> dist(-1.0, 1.0);
-    Layer hidden({
-        Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
-        Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)
-    });
+    Layer hidden(
+        {Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
+         Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)}
+    );
     Layer output({Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)});
     NeuralNetwork net({hidden, output});
 
@@ -314,10 +327,10 @@ void testXorNetworkLearnsCorrectly(TestRunner& t) {
 void testNetworkLossDecreases(TestRunner& t) {
     std::mt19937 rng(42);
     std::uniform_real_distribution<double> dist(-1.0, 1.0);
-    Layer hidden({
-        Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
-        Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)
-    });
+    Layer hidden(
+        {Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
+         Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)}
+    );
     Layer output({Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)});
     NeuralNetwork net({hidden, output});
 
@@ -335,14 +348,14 @@ void testNetworkLossDecreases(TestRunner& t) {
 void testNetworkIdentityMapping(TestRunner& t) {
     std::mt19937 rng(7);
     std::uniform_real_distribution<double> dist(-0.5, 0.5);
-    Layer hidden({
-        Neuron({dist(rng), dist(rng)}, dist(rng), ReLU),
-        Neuron({dist(rng), dist(rng)}, dist(rng), ReLU)
-    });
-    Layer output({
-        Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid),
-        Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)
-    });
+    Layer hidden(
+        {Neuron({dist(rng), dist(rng)}, dist(rng), ReLU),
+         Neuron({dist(rng), dist(rng)}, dist(rng), ReLU)}
+    );
+    Layer output(
+        {Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid),
+         Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)}
+    );
     NeuralNetwork net({hidden, output});
 
     std::vector<std::vector<double>> inputs = {{1.0, 0.0}, {0.0, 1.0}};
@@ -425,8 +438,8 @@ void testFastLayerApplyGradients(TestRunner& t) {
 }
 
 void testSaveLoadRoundTrip(TestRunner& t) {
-    Layer hidden({
-        Neuron({0.5, -0.3}, 0.1, Tanh), Neuron({0.8, 0.2}, -0.5, ReLU)}
+    Layer hidden(
+        {Neuron({0.5, -0.3}, 0.1, Tanh), Neuron({0.8, 0.2}, -0.5, ReLU)}
     );
     Layer output({Neuron({0.4, -0.6}, 0.0, Sigmoid)});
     NeuralNetwork net({hidden, output});
@@ -473,10 +486,10 @@ void testSaveLoadMultipleLayers(TestRunner& t) {
 }
 
 void testSaveLoadAllActivations(TestRunner& t) {
-    Layer l({
-        Neuron({1.0}, 0.0, Sigmoid), Neuron({1.0}, 0.0, Tanh),
-        Neuron({1.0}, 0.0, ReLU)
-    });
+    Layer l(
+        {Neuron({1.0}, 0.0, Sigmoid), Neuron({1.0}, 0.0, Tanh),
+         Neuron({1.0}, 0.0, ReLU)}
+    );
     NeuralNetwork net({l});
 
     std::vector<double> input = {2.0};
@@ -498,12 +511,12 @@ void testSaveLoadAllActivations(TestRunner& t) {
 void testSaveLoadPreservesAfterTraining(TestRunner& t) {
     std::mt19937 rng(2);
     std::uniform_real_distribution<double> dist(-1.0, 1.0);
-    NeuralNetwork net({
-        Layer({
-            Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
-            Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)
-        }),
-        Layer({Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)})}
+    NeuralNetwork net(
+        {Layer(
+             {Neuron({dist(rng), dist(rng)}, dist(rng), Tanh),
+              Neuron({dist(rng), dist(rng)}, dist(rng), Tanh)}
+         ),
+         Layer({Neuron({dist(rng), dist(rng)}, dist(rng), Sigmoid)})}
     );
 
     std::vector<std::vector<double>> inputs = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
@@ -538,6 +551,7 @@ int main() {
     testReluActivation(t);
     testReluDerivative(t);
     testAssemblyDotProduct(t);
+    testAssemblyRelu(t);
 
     testNeuronForward(t);
     testNeuronForwardWithBias(t);

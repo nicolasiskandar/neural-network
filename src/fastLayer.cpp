@@ -2,14 +2,30 @@
 
 #include "nn_asm.hpp"
 
+namespace {
+
+double applyForwardActivation(const PlainActivation& activation, double value) {
+    if (activation.forward == reluFn) return nn_relu_f64(value);
+    return activation.forward(value);
+}
+
+double
+applyDerivativeActivation(const PlainActivation& activation, double output) {
+    if (activation.derivativeFromOutput == reluDerivFromOutput)
+        return nn_relu_derivative_from_output_f64(output);
+    return activation.derivativeFromOutput(output);
+}
+
+}  // namespace
+
 std::vector<double> FastLayer::forward(const std::vector<double>& input) {
     lastInput_ = input;
     lastOutput_.resize(numOutputs_);
     for (std::size_t o = 0; o < numOutputs_; ++o) {
         const double* row = &weights_[o * numInputs_];
-        double z = biases_[o] +
-                   nn_dot_product_f64(row, input.data(), numInputs_);
-        lastOutput_[o] = activation_.forward(z);
+        double z =
+            biases_[o] + nn_dot_product_f64(row, input.data(), numInputs_);
+        lastOutput_[o] = applyForwardActivation(activation_, z);
     }
     return lastOutput_;
 }
@@ -22,8 +38,8 @@ std::vector<double> FastLayer::backward(
     std::vector<double> dLoss_dInput(numInputs_, 0.0);
 
     for (std::size_t o = 0; o < numOutputs_; ++o) {
-        double delta =
-            dLoss_dOutput[o] * activation_.derivativeFromOutput(lastOutput_[o]);
+        double delta = dLoss_dOutput[o] *
+                       applyDerivativeActivation(activation_, lastOutput_[o]);
         gradBiases_[o] = delta;
         double* gradRow = &gradWeights_[o * numInputs_];
         const double* weightRow = &weights_[o * numInputs_];
