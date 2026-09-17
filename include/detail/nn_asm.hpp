@@ -58,3 +58,15 @@ extern "C" double nn_neuron_forward_f64(
     double bias,
     int activationKind
 );
+
+extern "C" void nn_neuron_backward_f64(
+    const double* weights,
+    const double* input,
+    std::size_t count,
+    double output,
+    double dLoss_dOutput,
+    int activationKind,
+    double* gradWeights,
+    double* gradBias,
+    double* dLoss_dInput
+);

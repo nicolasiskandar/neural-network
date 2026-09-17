@@ -44,16 +44,26 @@ double Neuron::forward(const std::vector<double>& input) {
 }
 
 std::vector<double> Neuron::backward(double dLoss_dOutput) {
+    gradWeights_.assign(weights_.size(), 0.0);
+    std::vector<double> dLoss_dInput(weights_.size());
+    int activationKind = assemblyActivationKind(activation_);
+    if (activationKind >= 0) {
+        nn_neuron_backward_f64(
+            weights_.data(), lastInput_.data(), weights_.size(), lastOutput_,
+            dLoss_dOutput, activationKind, gradWeights_.data(), &gradBias_,
+            dLoss_dInput.data()
+        );
+        return dLoss_dInput;
+    }
+
     double dOutput_dZ = activation_.derivativeFromOutput(lastOutput_);
     double delta = dLoss_dOutput * dOutput_dZ;
 
-    gradWeights_.assign(weights_.size(), 0.0);
     for (std::size_t i = 0; i < weights_.size(); ++i)
         gradWeights_[i] = delta * lastInput_[i];
 
     gradBias_ = delta;
 
-    std::vector<double> dLoss_dInput(weights_.size());
     for (std::size_t i = 0; i < weights_.size(); ++i)
         dLoss_dInput[i] = delta * weights_[i];
 
