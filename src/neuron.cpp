@@ -71,7 +71,8 @@ std::vector<double> Neuron::backward(double dLoss_dOutput) {
 }
 
 void Neuron::applyGradients(double learningRate) {
-    for (std::size_t i = 0; i < weights_.size(); ++i)
-        weights_[i] -= learningRate * gradWeights_[i];
-    bias_ -= learningRate * gradBias_;
+    nn_apply_gradients_f64(
+        weights_.data(), gradWeights_.data(), weights_.size(), learningRate
+    );
+    nn_apply_gradients_f64(&bias_, &gradBias_, 1, learningRate);
 }
