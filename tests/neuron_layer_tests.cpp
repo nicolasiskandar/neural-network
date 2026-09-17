@@ -30,6 +30,11 @@ void testNeuronForward(TestRunner& t) {
         threw = true;
     }
     t.check(threw, "Neuron forward rejects mismatched input size");
+    Neuron negative({1.0, 1.0}, 0.0, ReLU);
+    t.checkNear(
+        negative.forward({-1.0, -1.0}), 0.0, 1e-12,
+        "Neuron forward clamps negative ReLU output"
+    );
 }
 
 void testAssemblyNeuronForward(TestRunner& t) {
@@ -53,6 +58,10 @@ void testNeuronBackwardAndUpdate(TestRunner& t) {
     );
     t.checkNear(
         neuron.gradWeights()[1], -0.088723, 1e-5, "Neuron backward weight 1"
+    );
+    t.check(
+        neuron.backward(1.0).size() == 2,
+        "Neuron backward returns input-sized gradient"
     );
 
     double oldWeight = neuron.weights()[0];

@@ -46,6 +46,15 @@ void testFastLayer(TestRunner& t) {
     );
     layer.applyGradients(0.1);
     t.check(true, "FastLayer applies gradients");
+
+    PlainActivation custom{
+        [](double value) { return value + 1.0; }, [](double) { return 1.0; }
+    };
+    FastLayer customLayer(1, 1, custom, {2.0}, {0.5});
+    t.checkNear(
+        customLayer.forward({3.0})[0], 7.5, 1e-12,
+        "FastLayer custom activation uses C++ fallback"
+    );
 }
 
 void testAssemblyGradientUpdate(TestRunner& t) {
@@ -76,6 +85,22 @@ void testSerialization(TestRunner& t) {
         before[0], after[0], 1e-12, "Serialized network prediction matches"
     );
     std::remove(path);
+
+    NeuralNetwork allActivations({Layer(
+        {Neuron({1.0}, 0.0, Sigmoid), Neuron({1.0}, 0.0, Tanh),
+         Neuron({1.0}, 0.0, ReLU)}
+    )});
+    const char* activationPath = "/tmp/test_activations.txt";
+    std::vector<double> activationBefore = allActivations.predict({2.0});
+    saveNetwork(allActivations, activationPath);
+    NeuralNetwork activationLoaded = loadNetwork(activationPath);
+    std::vector<double> activationAfter = activationLoaded.predict({2.0});
+    for (std::size_t i = 0; i < activationBefore.size(); ++i)
+        t.checkNear(
+            activationBefore[i], activationAfter[i], 1e-12,
+            "Serialization preserves activation"
+        );
+    std::remove(activationPath);
 }
 
 }  // namespace

@@ -21,6 +21,18 @@ void testLosses(TestRunner& t) {
     LossResult bce = binaryCrossEntropy({0.9}, {1.0});
     t.checkNear(bce.loss, 0.10536, 1e-4, "BCE loss");
     t.checkNear(bce.dLoss_dOutput[0], -1.11111, 1e-4, "BCE gradient");
+    t.checkNear(
+        binaryCrossEntropy({0.9}, {0.0}).loss, -std::log(1.0 - 0.9), 1e-5,
+        "BCE target-zero loss"
+    );
+    constexpr double bceH = 1e-7;
+    double bceNumeric = (binaryCrossEntropy({0.8 + bceH}, {1.0}).loss -
+                         binaryCrossEntropy({0.8 - bceH}, {1.0}).loss) /
+                        (2 * bceH);
+    t.checkNear(
+        binaryCrossEntropy({0.8}, {1.0}).dLoss_dOutput[0], bceNumeric, 1e-4,
+        "BCE numeric gradient"
+    );
 
     constexpr double h = 1e-7;
     double numeric = (meanSquaredError({2.0 + h}, {3.0}).loss -
@@ -80,6 +92,23 @@ void testNetworkTraining(TestRunner& t) {
     double final = single.trainStep({1.0, 1.0}, {1.0}, 0.5, meanSquaredError);
     t.check(final < initial, "Network loss decreases during training");
     t.check(single.predict({1.0, 1.0})[0] > 0.9, "Single neuron learns target");
+
+    NeuralNetwork identity({
+        Layer({Neuron({0.5, -0.2}, 0.0, ReLU), Neuron({-0.1, 0.5}, 0.0, ReLU)}),
+        Layer(
+            {Neuron({0.4, -0.3}, 0.0, Sigmoid),
+             Neuron({-0.2, 0.4}, 0.0, Sigmoid)}
+        ),
+    });
+    for (int epoch = 0; epoch < 1000; ++epoch) {
+        identity.trainStep({1.0, 0.0}, {1.0, 0.0}, 0.5, meanSquaredError);
+        identity.trainStep({0.0, 1.0}, {0.0, 1.0}, 0.5, meanSquaredError);
+    }
+    std::vector<double> identityOutput = identity.predict({1.0, 0.0});
+    t.check(identityOutput[0] > 0.6, "Identity network retains first signal");
+    t.check(
+        identityOutput[1] < 0.4, "Identity network suppresses second signal"
+    );
 }
 
 }  // namespace

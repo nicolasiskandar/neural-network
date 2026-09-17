@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <vector>
 
 #include "activations.hpp"
@@ -12,17 +13,26 @@ namespace {
 void testCppActivations(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
     t.checkNear(sigmoidFn(1.0), 0.731058, 1e-5, "Sigmoid(1) ~ 0.73106");
+    t.checkNear(sigmoidFn(-1.0), 0.268941, 1e-5, "Sigmoid(-1) ~ 0.26894");
+    t.checkNear(sigmoidFn(10.0), 0.999954, 1e-5, "Sigmoid(10) ~ 0.99995");
+    t.checkNear(sigmoidFn(-10.0), 0.00004539, 1e-7, "Sigmoid(-10) ~ 0");
     t.checkNear(
         sigmoidDerivFromOutput(sigmoidFn(1.0)),
         sigmoidFn(1.0) * (1.0 - sigmoidFn(1.0)), 1e-12, "Sigmoid derivative"
     );
     t.checkNear(tanhFn(-1.0), -0.761594, 1e-5, "Tanh(-1) ~ -0.76159");
+    t.checkNear(tanhFn(0.0), 0.0, 1e-12, "Tanh(0) = 0");
+    t.checkNear(tanhFn(10.0), 0.999999, 1e-5, "Tanh(10) ~ 1");
     t.checkNear(
         tanhDerivFromOutput(tanhFn(1.0)), 1.0 - tanhFn(1.0) * tanhFn(1.0),
         1e-12, "Tanh derivative"
     );
     t.checkNear(reluFn(-3.0), 0.0, 1e-12, "ReLU clamps negative input");
+    t.checkNear(reluFn(5.0), 5.0, 1e-12, "ReLU preserves positive input");
     t.checkNear(reluDerivFromOutput(5.0), 1.0, 1e-12, "ReLU derivative");
+    t.checkNear(
+        reluDerivFromOutput(0.0), 0.0, 1e-12, "ReLU derivative at zero"
+    );
 }
 
 void testAssemblyDotProduct(TestRunner& t) {
@@ -40,6 +50,7 @@ void testAssemblyDotProduct(TestRunner& t) {
 
 void testAssemblyActivations(TestRunner& t) {
     t.checkNear(nn_relu_f64(-3.0), 0.0, 1e-12, "Assembly ReLU: negative input");
+    t.checkNear(nn_relu_f64(2.5), 2.5, 1e-12, "Assembly ReLU: positive input");
     t.checkNear(
         nn_relu_derivative_from_output_f64(2.5), 1.0, 1e-12,
         "Assembly ReLU derivative"
@@ -61,6 +72,10 @@ void testAssemblyActivations(TestRunner& t) {
             nn_tanh_f64(input), tanhFn(input), 1e-6,
             "Assembly tanh approximation"
         );
+    t.check(
+        std::isnan(nn_sigmoid_f64(std::numeric_limits<double>::quiet_NaN())),
+        "Assembly sigmoid preserves NaN"
+    );
 }
 
 void testAssemblyFastLayerForward(TestRunner& t) {
