@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "detail/nn_asm.hpp"
 #include "layer.hpp"
 #include "losses.hpp"
 #include "neuron.hpp"
@@ -29,6 +30,18 @@ void testNeuronForward(TestRunner& t) {
         threw = true;
     }
     t.check(threw, "Neuron forward rejects mismatched input size");
+}
+
+void testAssemblyNeuronForward(TestRunner& t) {
+    const std::vector<double> input = {2.0, -1.0};
+    const std::vector<double> weights = {0.5, 1.0};
+    t.checkNear(
+        nn_neuron_forward_f64(
+            input.data(), weights.data(), weights.size(), 0.25,
+            NN_ACTIVATION_SIGMOID
+        ),
+        nn_sigmoid_f64(0.25), 1e-12, "Assembly neuron forward"
+    );
 }
 
 void testNeuronBackwardAndUpdate(TestRunner& t) {
@@ -85,6 +98,7 @@ void testLayer(TestRunner& t) {
 
 void runNeuronAndLayerTests(TestRunner& t) {
     testNeuronForward(t);
+    testAssemblyNeuronForward(t);
     testNeuronBackwardAndUpdate(t);
     testNeuronGradientCheck(t);
     testLayer(t);

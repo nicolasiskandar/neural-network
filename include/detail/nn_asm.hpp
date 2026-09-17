@@ -50,3 +50,11 @@ extern "C" void nn_apply_gradients_f64(
     std::size_t count,
     double learningRate
 );
+
+extern "C" double nn_neuron_forward_f64(
+    const double* input,
+    const double* weights,
+    std::size_t count,
+    double bias,
+    int activationKind
+);

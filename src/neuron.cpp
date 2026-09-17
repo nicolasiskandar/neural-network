@@ -2,6 +2,21 @@
 
 #include <stdexcept>
 
+#include "detail/nn_asm.hpp"
+
+namespace {
+
+int assemblyActivationKind(const Activation& activation) {
+    auto target = activation.forward.target<double (*)(double)>();
+    if (target == nullptr) return -1;
+    if (*target == sigmoidFn) return NN_ACTIVATION_SIGMOID;
+    if (*target == tanhFn) return NN_ACTIVATION_TANH;
+    if (*target == reluFn) return NN_ACTIVATION_RELU;
+    return -1;
+}
+
+}  // namespace
+
 double Neuron::forward(const std::vector<double>& input) {
     if (input.size() != weights_.size())
         throw std::invalid_argument(
@@ -9,6 +24,15 @@ double Neuron::forward(const std::vector<double>& input) {
         );
 
     lastInput_ = input;
+
+    int activationKind = assemblyActivationKind(activation_);
+    if (activationKind >= 0) {
+        lastOutput_ = nn_neuron_forward_f64(
+            input.data(), weights_.data(), weights_.size(), bias_,
+            activationKind
+        );
+        return lastOutput_;
+    }
 
     double z = bias_;
     for (std::size_t i = 0; i < weights_.size(); ++i)
