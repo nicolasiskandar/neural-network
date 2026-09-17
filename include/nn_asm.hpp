@@ -11,3 +11,6 @@ extern "C" double nn_exp_approx_f64(double value);
 
 extern "C" double nn_sigmoid_f64(double value);
 extern "C" double nn_sigmoid_derivative_from_output_f64(double output);
+
+extern "C" double nn_tanh_f64(double value);
+extern "C" double nn_tanh_derivative_from_output_f64(double output);

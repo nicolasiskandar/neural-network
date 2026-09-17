@@ -132,6 +132,49 @@ nn_sigmoid_derivative_from_output_f64:
   mulsd %xmm1, %xmm0
   ret
 
+  .globl nn_tanh_f64
+  .type nn_tanh_f64, @function
+
+# double nn_tanh_f64(double value)
+# Saturation at +/-8 has an absolute error below 1e-6.
+nn_tanh_f64:
+  ucomisd %xmm0, %xmm0
+  jp      .Ltanh_nan
+  ucomisd .Ltanh_upper(%rip), %xmm0
+  jae     .Ltanh_one
+  ucomisd .Ltanh_lower(%rip), %xmm0
+  jbe     .Ltanh_negative_one
+  addsd   %xmm0, %xmm0
+  subq    $8, %rsp
+  call    nn_exp_approx_f64
+  addq    $8, %rsp
+  movapd  %xmm0, %xmm1
+  subsd   .Lone(%rip), %xmm1
+  addsd   .Lone(%rip), %xmm0
+  divsd   %xmm0, %xmm1
+  movapd  %xmm1, %xmm0
+  ret
+.Ltanh_one:
+  movsd .Lone(%rip), %xmm0
+  ret
+.Ltanh_negative_one:
+  movsd .Lnegative_one(%rip), %xmm0
+  ret
+.Ltanh_nan:
+  subsd %xmm0, %xmm0
+  ret
+
+  .globl nn_tanh_derivative_from_output_f64
+  .type nn_tanh_derivative_from_output_f64, @function
+
+# double nn_tanh_derivative_from_output_f64(double output)
+nn_tanh_derivative_from_output_f64:
+  mulsd %xmm0, %xmm0
+  movsd .Lone(%rip), %xmm1
+  subsd %xmm0, %xmm1
+  movapd %xmm1, %xmm0
+  ret
+
   .section .rodata
 .p2align 3
 .Lone:
@@ -144,6 +187,12 @@ nn_sigmoid_derivative_from_output_f64:
   .double -14.0
 .Lsigmoid_upper:
   .double 14.0
+.Ltanh_lower:
+  .double -8.0
+.Ltanh_upper:
+  .double 8.0
+.Lnegative_one:
+  .double -1.0
 .Lexp_c2:
   .double 0.5
 .Lexp_c3:

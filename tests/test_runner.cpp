@@ -64,6 +64,20 @@ void testAssemblySigmoid(TestRunner& t) {
     );
 }
 
+void testAssemblyTanh(TestRunner& t) {
+    for (double input : {-8.0, -4.0, -1.0, 0.0, 1.0, 4.0, 8.0}) {
+        t.checkNear(
+            nn_tanh_f64(input), tanhFn(input), 1e-6,
+            "Assembly tanh approximation"
+        );
+    }
+    double output = nn_tanh_f64(1.0);
+    t.checkNear(
+        nn_tanh_derivative_from_output_f64(output), 1.0 - output * output,
+        1e-12, "Assembly tanh derivative"
+    );
+}
+
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
     t.checkNear(sigmoidFn(1.0), 0.731058, 1e-5, "Sigmoid(1) ~ 0.73106");
@@ -579,6 +593,7 @@ int main() {
     testAssemblyRelu(t);
     testAssemblyExpApproximation(t);
     testAssemblySigmoid(t);
+    testAssemblyTanh(t);
 
     testNeuronForward(t);
     testNeuronForwardWithBias(t);
