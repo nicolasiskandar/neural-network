@@ -1,12 +1,14 @@
 #include "fastLayer.hpp"
 
+#include "nn_asm.hpp"
+
 std::vector<double> FastLayer::forward(const std::vector<double>& input) {
     lastInput_ = input;
     lastOutput_.resize(numOutputs_);
     for (std::size_t o = 0; o < numOutputs_; ++o) {
-        double z = biases_[o];
         const double* row = &weights_[o * numInputs_];
-        for (std::size_t i = 0; i < numInputs_; ++i) z += row[i] * input[i];
+        double z = biases_[o] +
+                   nn_dot_product_f64(row, input.data(), numInputs_);
         lastOutput_[o] = activation_.forward(z);
     }
     return lastOutput_;

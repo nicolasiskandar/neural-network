@@ -10,7 +10,21 @@
 #include "losses.hpp"
 #include "network.hpp"
 #include "neuron.hpp"
+#include "nn_asm.hpp"
 #include "serialize.hpp"
+
+void testAssemblyDotProduct(TestRunner& t) {
+    const std::vector<double> left = {2.0, -1.0, 0.5};
+    const std::vector<double> right = {3.0, 4.0, 2.0};
+    t.checkNear(
+        nn_dot_product_f64(left.data(), right.data(), left.size()), 3.0, 1e-12,
+        "Assembly dot product: mixed-sign values"
+    );
+    t.checkNear(
+        nn_dot_product_f64(nullptr, nullptr, 0), 0.0, 1e-12,
+        "Assembly dot product: empty input"
+    );
+}
 
 void testSigmoidActivation(TestRunner& t) {
     t.checkNear(sigmoidFn(0.0), 0.5, 1e-12, "Sigmoid(0) = 0.5");
@@ -523,6 +537,7 @@ int main() {
     testTanhDerivative(t);
     testReluActivation(t);
     testReluDerivative(t);
+    testAssemblyDotProduct(t);
 
     testNeuronForward(t);
     testNeuronForwardWithBias(t);

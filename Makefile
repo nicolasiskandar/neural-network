@@ -1,7 +1,8 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -Iinclude -O2
 
-LIB_SRC := src/fastLayer.cpp src/neuron.cpp src/layer.cpp src/serialize.cpp
+LIB_SRC := src/fastLayer.cpp src/neuron.cpp src/layer.cpp src/serialize.cpp \
+	asm/nn_kernels.S
 
 TEST_SRC := tests/test_runner.cpp $(LIB_SRC)
 TEST_BIN := nn_test
